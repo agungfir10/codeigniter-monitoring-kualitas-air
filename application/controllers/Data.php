@@ -33,4 +33,15 @@ class Data extends CI_Controller
             }
         }
     }
+
+    public function get_data_realtime()
+    {
+        $data['datas'] = $this->data_model->get_all_data();
+        $this->output
+            ->set_status_header(200)
+            ->set_content_type('application/json', 'utf-8')
+            ->set_output(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+            ->_display();
+        exit;
+    }
 }

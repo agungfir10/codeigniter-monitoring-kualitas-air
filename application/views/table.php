@@ -29,8 +29,8 @@
                             <table class="display table nowrap dataTable table-bordered" id="dataTable" width="100%" cellspacing="0">
                                 <thead>
                                     <tr>
-                                        <th>No</th>
-                                        <th>Ph</th>
+                                        <th width="3%">No</th>
+                                        <th width="30%">Ph</th>
                                         <th>Tanggal</th>
                                     </tr>
                                 </thead>

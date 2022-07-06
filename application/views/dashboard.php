@@ -19,6 +19,20 @@
                 <!-- Page Heading -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                    <div class="d-flex">
+                        <div class="input-group mr-2" style="width: 140px !important;">
+                            <input type="number" class="form-control form-control-sm" value="1" id="duration-realtime" name="duration-realtime">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline btn-sm" type="button">detik</button>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-danger btn-icon-split btn-sm" id="realtime">
+                            <span class="icon text-white-50">
+                                <i class="fa fa-power-off" id="power"></i>
+                            </span>
+                            <span class="text">Realtime</span>
+                        </a>
+                    </div>
                 </div>
 
 
@@ -34,15 +48,12 @@
                             <div class="row justify-content-center">
                                 <!-- Earnings (Monthly) Card Example -->
                                 <div class="col-12">
-                                    <div class="card h-100 py-2">
+                                    <div class="card h-100 py-2 border-0">
                                         <div class="card-body">
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col mr-2">
                                                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Kualitas Air</div>
-                                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="temp"><?= isset($datas[0]->sensorph) ? $datas[0]->sensorph : "" ?></div>
-                                                </div>
-                                                <div class="col-auto">
-                                                    <i class="fas fa-temperature-low fa-2x text-gray-300"></i>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="ph"><?= isset($datas[0]->sensorph) ? $datas[0]->sensorph : "" ?></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -120,7 +131,7 @@
                 <?php endforeach ?>
             ],
             datasets: [{
-                label: "Suhu",
+                label: "Ph",
                 lineTension: 0.3,
                 backgroundColor: "rgba(78, 115, 223, 0.05)",
                 borderColor: "rgba(78, 115, 223, 1)",
@@ -159,7 +170,9 @@
                         drawBorder: false
                     },
                     ticks: {
-                        maxTicksLimit: 7
+                        maxTicksLimit: 10,
+                        maxRotation: 0,
+
                     }
                 }],
                 yAxes: [{
@@ -168,7 +181,7 @@
                         padding: 10,
                         // Include a dollar sign in the ticks
                         callback: function(value, index, values) {
-                            return number_format(value) + ' ℃';
+                            return number_format(value);
                         }
                     },
                     gridLines: {
@@ -207,29 +220,78 @@
         }
     });
 </script>
-<!-- 
+
 <script>
-    const tempEl = document.getElementById('temp')
-    const turbidityEl = document.getElementById('turbidity')
-    setInterval(() => {
+    const btnRealtime = document.getElementById('realtime');
+    const iconRealtime = document.getElementById("power");
+    const sensorPhEl = document.getElementById('ph')
+    const durationRealtimeEl = document.getElementById("duration-realtime")
+
+    let duration = localStorage.getItem("duration")
+
+    if (duration !== null) {
+        durationRealtimeEl.value = duration;
+    } else {
+        durationRealtimeEl.value = 1
+    }
+
+    function fetchData() {
         fetch("<?= base_url('data/get_data_realtime'); ?>")
             .then(res => res.json())
             .then(data => {
-                const labels = data.datas.map(arr => arr["Date"].substring(10, 5))
-                const suhu = data.datas.map(arr => arr["Suhu"])
-                const turbidity = data.datas.map(arr => arr["Kelembaban"])
+                const labels = []
+                data.datas.forEach(arr => labels.push(arr.tanggal.substr(11, 5)))
+                const sensorPh = data.datas.map(arr => arr["sensorph"])
                 myLineChart.data.labels = labels;
-                myLineChart.data.datasets[0].data = suhu;
+                myLineChart.data.datasets[0].data = sensorPh;
                 myLineChart.update();
 
-                myTurbidityChart.data.labels = labels;
-                myTurbidityChart.data.datasets[0].data = turbidity;
-                myTurbidityChart.update();
-
-                tempEl.innerText = suhu[0] + " ℃"
-                turbidityEl.innerText = turbidity[0]
+                sensorPhEl.innerText = sensorPh[0]
 
             })
             .catch(err => console.log(err.message))
-    }, 1000);
-</script> -->
+    }
+
+    function changeBtnRealtimeSuccess() {
+        btnRealtime.classList.remove("btn-danger");
+        btnRealtime.classList.add("btn-success");
+    }
+
+    function changeBtnRealtimeDanger() {
+        btnRealtime.classList.add("btn-danger");
+        btnRealtime.classList.remove("btn-success");
+    }
+
+    (localStorage.getItem("realtime") === "true") ? changeBtnRealtimeSuccess(): changeBtnRealtimeDanger()
+
+    let interval = null
+
+
+    function realtimeAction() {
+        if (interval !== null) {
+            clearInterval(interval)
+        }
+        const isRealtime = (localStorage.getItem("realtime") === "true");
+        duration = durationRealtimeEl.value
+
+        console.log(duration)
+        if (isRealtime === true) {
+            interval = setInterval(fetchData, duration * 1000);
+            changeBtnRealtimeSuccess()
+        } else {
+            changeBtnRealtimeDanger()
+        }
+
+    }
+    btnRealtime.addEventListener('click', function() {
+        localStorage.setItem('realtime', !(localStorage.getItem("realtime") === "true"))
+        realtimeAction()
+    })
+
+    realtimeAction();
+
+    durationRealtimeEl.addEventListener('change', e => {
+        localStorage.setItem("duration", e.target.value)
+        realtimeAction()
+    })
+</script>
