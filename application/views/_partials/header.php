@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title><?= isset($meta['title']) ? $meta['title'] : 'Monitoring Kandang' ?></title>
+    <title><?= isset($meta['title']) ? $meta['title'] : 'Monitoring Kualitas Air' ?></title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= base_url('assets/vendor/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet" type="text/css">
